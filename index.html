@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>PWA Генератор паролів</title>
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#0f172a" />
+    <style>
+      :root {
+        --bg: #0f172a;
+        --card: #0b1220;
+        --accent: #22c55e;
+        --muted: #94a3b8;
+        --glass: rgba(255, 255, 255, 0.03);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+          Roboto, "Helvetica Neue", Arial;
+        color: #e6eef8;
+        background: linear-gradient(180deg, #081022 0%, #07121b 100%);
+      }
+      .wrap {
+        min-height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 28px;
+      }
+      .card {
+        width: 100%;
+        max-width: 920px;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.02),
+          rgba(255, 255, 255, 0.01)
+        );
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 10px 30px rgba(2, 6, 23, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.03);
+      }
+      header {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+      .logo {
+        width: 56px;
+        height: 56px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, var(--accent), #06b6d4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #081022;
+        font-weight: 700;
+        font-size: 24px;
+      }
+      h1 {
+        font-size: 20px;
+        margin: 0;
+      }
+      p.lead {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 18px;
+        margin-top: 16px;
+      }
+      .controls {
+        background: var(--card);
+        padding: 14px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.02);
+      }
+      label {
+        display: block;
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+      .row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .options {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin: 8px 0 12px;
+      }
+      .opt {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+      }
+      input[type="range"] {
+        width: 100%;
+      }
+      input[type="number"] {
+        width: 72px;
+        padding: 6px;
+        border-radius: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        background: transparent;
+        color: inherit;
+      }
+      button {
+        background: var(--accent);
+        border: none;
+        color: #06111a;
+        padding: 8px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      button.ghost {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        color: var(--muted);
+      }
+      .result {
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.02),
+          transparent
+        );
+        padding: 12px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .pwd {
+        flex: 1;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Roboto Mono,
+          monospace;
+        font-size: 16px;
+        word-break: break-all;
+      }
+      .meta {
+        font-size: 13px;
+        color: var(--muted);
+        margin-top: 10px;
+      }
+      .strength {
+        height: 10px;
+        border-radius: 6px;
+        background: var(--glass);
+        overflow: hidden;
+      }
+      .strength > i {
+        display: block;
+        height: 100%;
+        width: 0%;
+      }
+      .strength.weak > i {
+        width: 30%;
+        background: #ef4444;
+      }
+      .strength.fair > i {
+        width: 55%;
+        background: #f59e0b;
+      }
+      .strength.good > i {
+        width: 75%;
+        background: #22c55e;
+      }
+      .strength.strong > i {
+        width: 100%;
+        background: #06b6d4;
+      }
+      .right {
+        background: transparent;
+        padding: 14px;
+        border-radius: 10px;
+        border: 1px dashed rgba(255, 255, 255, 0.03);
+        min-height: 240px;
+      }
+      small.hint {
+        color: var(--muted);
+      }
+      footer {
+        margin-top: 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      @media (max-width: 880px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+        .right {
+          order: 2;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="card" role="main">
+        <header>
+          <div class="logo">PW</div>
+          <div>
+            <h1>Генератор паролів (PWA)</h1>
+            <p class="lead">
+              Легкий, офлайн-готовий односторінковий генератор — працює як
+              прогресивний веб-додаток.
+            </p>
+          </div>
+        </header>
+
+        <div class="grid">
+          <div>
+            <div class="controls">
+              <label for="length"
+                >Довжина: <strong id="lenLabel">16</strong></label
+              >
+              <div class="row">
+                <input
+                  id="length"
+                  type="range"
+                  min="4"
+                  max="128"
+                  value="16"
+                /><input
+                  id="lengthNum"
+                  type="number"
+                  min="4"
+                  max="128"
+                  value="16"
+                />
+              </div>
+
+              <div class="options">
+                <label class="opt"
+                  ><input id="lower" type="checkbox" checked /> Маленькі
+                  (a-z)</label
+                >
+                <label class="opt"
+                  ><input id="upper" type="checkbox" checked /> Великі
+                  (A-Z)</label
+                >
+                <label class="opt"
+                  ><input id="numbers" type="checkbox" checked /> Цифри
+                  (0-9)</label
+                >
+                <label class="opt"
+                  ><input id="symbols" type="checkbox" /> Символи
+                  (!@#$...)</label
+                >
+              </div>
+
+              <div class="row" style="margin-top: 6px">
+                <button id="gen">Згенерувати</button>
+                <button id="copy" class="ghost">Копіювати</button>
+                <button id="clear" class="ghost">Очистити</button>
+              </div>
+
+              <div style="margin-top: 12px">
+                <label>Пароль</label>
+                <div class="result">
+                  <div id="pwd" class="pwd">—</div>
+                  <button id="show">Показати</button>
+                </div>
+                <div class="meta">
+                  <div class="strength weak" id="strength" aria-hidden="true">
+                    <i></i>
+                  </div>
+                  <div
+                    style="
+                      display: flex;
+                      justify-content: space-between;
+                      margin-top: 6px;
+                    "
+                  >
+                    <small class="hint" id="entropy">Ентропія: —</small
+                    ><small class="hint" id="timeToCrack">Час зламу: —</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <footer>
+              <div>
+                Збереження: <small class="hint">локально (Clipboard)</small>
+              </div>
+              <div><small id="installHint">Підтримка встановлення</small></div>
+            </footer>
+          </div>
+
+          <aside class="right">
+            <h3>Поради</h3>
+            <ul>
+              <li>
+                Використовуйте довгі паролі (16+ символів) для важливих
+                акаунтів.
+              </li>
+              <li>
+                Уникайте предсказуваних фраз; застосовуйте унікальний пароль для
+                кожного сервісу.
+              </li>
+              <li>
+                Розгляньте використання менеджера паролів для збереження
+                складних паролів.
+              </li>
+            </ul>
+            <hr />
+            <h4>Тест офлайн</h4>
+            <p class="hint">
+              Щоб перевірити PWA / Service Worker — відкрийте цю сторінку через
+              локальний сервер (localhost) або розгорніть на HTTPS. Після цього
+              браузер запропонує встановити додаток.
+            </p>
+          </aside>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ---------- UI & Password JS ----------
+      const length = document.getElementById("length");
+      const lengthNum = document.getElementById("lengthNum");
+      const lenLabel = document.getElementById("lenLabel");
+      const lower = document.getElementById("lower");
+      const upper = document.getElementById("upper");
+      const numbers = document.getElementById("numbers");
+      const symbols = document.getElementById("symbols");
+      const genBtn = document.getElementById("gen");
+      const copyBtn = document.getElementById("copy");
+      const clearBtn = document.getElementById("clear");
+      const pwdEl = document.getElementById("pwd");
+      const showBtn = document.getElementById("show");
+      const strengthEl = document.getElementById("strength");
+      const entropyEl = document.getElementById("entropy");
+      const crackEl = document.getElementById("timeToCrack");
+      const installHint = document.getElementById("installHint");
+
+      function syncLen(v) {
+        length.value = v;
+        lengthNum.value = v;
+        lenLabel.textContent = v;
+      }
+      length.addEventListener("input", (e) => syncLen(e.target.value));
+      lengthNum.addEventListener("change", (e) => {
+        let v = Math.max(4, Math.min(128, Number(e.target.value) || 16));
+        syncLen(v);
+      });
+
+      const sets = {
+        lower: "abcdefghijklmnopqrstuvwxyz",
+        upper: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        numbers: "0123456789",
+        symbols: "!@#$%^&*()-_=+[]{};:,.<>/?~",
+      };
+      function generatePassword(
+        len,
+        withLower,
+        withUpper,
+        withNumbers,
+        withSymbols
+      ) {
+        let pool = "";
+        if (withLower) pool += sets.lower;
+        if (withUpper) pool += sets.upper;
+        if (withNumbers) pool += sets.numbers;
+        if (withSymbols) pool += sets.symbols;
+        if (!pool) return "";
+        const arr = new Uint32Array(len);
+        crypto.getRandomValues(arr);
+        return Array.from(arr)
+          .map((n) => pool[n % pool.length])
+          .join("");
+      }
+
+      function estimateEntropy(length, charsetSize) {
+        return Math.round(length * Math.log2(charsetSize || 1) * 10) / 10;
+      }
+      function timeToCrackSeconds(entropyBits) {
+        const attemptsPerSec = 1e10;
+        return Math.pow(2, entropyBits) / attemptsPerSec;
+      }
+      function humanDuration(sec) {
+        if (!isFinite(sec) || sec > 1e18) return "дуже довго";
+        const units = [
+          ["років", 31557600],
+          ["днів", 86400],
+          ["годин", 3600],
+          ["хв", 60],
+          ["сек", 1],
+        ];
+        for (const [u, v] of units) {
+          if (sec >= v) return Math.round(sec / v) + " " + u;
+        }
+        return Math.round(sec * 1000) + " мс";
+      }
+
+      function updateStrength(pw) {
+        if (!pw) {
+          strengthEl.className = "strength weak";
+          entropyEl.textContent = "Ентропія: —";
+          crackEl.textContent = "Час зламу: —";
+          return;
+        }
+        let charset = 0;
+        if (/[a-z]/.test(pw)) charset += 26;
+        if (/[A-Z]/.test(pw)) charset += 26;
+        if (/[0-9]/.test(pw)) charset += 10;
+        if (/[^A-Za-z0-9]/.test(pw)) charset += 32;
+        const bits = estimateEntropy(pw.length, charset);
+        entropyEl.textContent = "Ентропія: " + bits + " біт";
+        crackEl.textContent =
+          "Час зламу: " + humanDuration(timeToCrackSeconds(bits));
+        if (bits < 40) strengthEl.className = "strength weak";
+        else if (bits < 60) strengthEl.className = "strength fair";
+        else if (bits < 80) strengthEl.className = "strength good";
+        else strengthEl.className = "strength strong";
+      }
+
+      genBtn.addEventListener("click", () => {
+        const pw = generatePassword(
+          Number(length.value),
+          lower.checked,
+          upper.checked,
+          numbers.checked,
+          symbols.checked
+        );
+        pwdEl.textContent = pw || "Не вибрано набір символів";
+        updateStrength(pw);
+      });
+      copyBtn.addEventListener("click", async () => {
+        const txt = pwdEl.textContent.trim();
+        if (!txt) {
+          navigator.clipboard?.writeText("");
+          return;
+        }
+        try {
+          await navigator.clipboard.writeText(txt);
+          copyBtn.textContent = "Скопійовано";
+          setTimeout(() => (copyBtn.textContent = "Копіювати"), 1200);
+        } catch (e) {
+          alert("Не вдалося скопіювати");
+        }
+      });
+      clearBtn.addEventListener("click", () => {
+        pwdEl.textContent = "—";
+        updateStrength("");
+      });
+      showBtn.addEventListener("click", () => {
+        pwdEl.style.webkitTextSecurity =
+          pwdEl.style.webkitTextSecurity === "disc" ? "none" : "disc";
+      });
+
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "g" || e.key === "G") {
+          e.preventDefault();
+          genBtn.click();
+        }
+      });
+
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker
+          .register("service-worker.js")
+          .then(() => console.log("ServiceWorker registered"))
+          .catch((err) => console.warn("SW failed", err));
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "PWA Генератор паролів",
+  "short_name": "PW-Gen",
+  "description": "Офлайн-готовий генератор паролів",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "icon-48.png",
+      "sizes": "48x48",
+      "type": "image/png"
+    }
+  ]
+}
