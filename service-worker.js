@@ -1,5 +1,5 @@
-const CACHE = "pwgen-cache-v1";
-const ASSETS = ["./", "index.html", "manifest.json"];
+const CACHE = "pwgen-cache-v2";
+const ASSETS = ["./", "index.html", "manifest.json", "style.css"];
 
 self.addEventListener("install", (e) => {
   self.skipWaiting();
